@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.7.0"
+  },
+  "scripts": {},
+  "dependencies": {
+    "xlsx-js-style": "^1.2.0"
+  }
+}
