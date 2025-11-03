@@ -1,8 +1,12 @@
-
-# Playwright
+# Playwright a Node.js ignorované adresáre
 node_modules/
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Špecifické pre projekt Bazos Scraper
+/data/
+*.xlsx
+~$*
