@@ -10,3 +10,5 @@ node_modules/
 /data/
 *.xlsx
 ~$*
+# ... ostatné položky v .gitignore (napr. /node_modules)
+/exportovane_data/
