@@ -1,36 +1,61 @@
-// Cesta: utils/excelWriter.js
-
-const XLSX = require('xlsx-js-style');
+const ExcelJS = require('exceljs');
 const path = require('path');
+const fs = require('fs');
 
-/**
- * Uloží pole dát do Excel súboru s automatickým názvom a formátovaním.
- * @param {Array<Object>} data - Pole objektov, kde každý objekt je riadok dát.
- * @param {string} fileNamePrefix - Predpona názvu súboru (napr. 'Bazose_data_').
- */
-function writeExcelData(data, fileNamePrefix = 'Bazos_Scraped_Data') {
-    if (data.length === 0) {
-        console.warn(`[Excel Writer] Neboli nájdené žiadne dáta na export.`);
+// Vytvorí priečinok, ak neexistuje
+function ensureDirectoryExistence(filePath) {
+    // Extrahujeme cestu k adresáru zo súborovej cesty
+    const dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+        return true;
+    }
+    // Vytvoríme ho rekurzívne
+    fs.mkdirSync(dirname, { recursive: true });
+}
+
+function writeExcelData(data) {
+    if (!data || data.length === 0) {
+        console.log("    -> Žiadne dáta na export. Export preskočený.");
         return;
     }
 
-    // Vytvorenie unikátneho názvu súboru s dátumom a časom
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `${fileNamePrefix}_${timestamp}.xlsx`;
-    const filePath = path.join(__dirname, '..', 'data', fileName); 
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Bazos Scrape Data');
 
-    try {
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'ScrapedData');
-        
-        // Export do súboru
-        XLSX.writeFile(workbook, filePath);
-        
-        console.log(`\n✅ Dáta úspešne uložené do Excelu: ${filePath}`);
-    } catch (error) {
-        console.error(`[Excel Writer] Chyba pri zápise Excel súboru ${fileName}:`, error.message);
-    }
+    // 1. Definovanie stĺpcov (Headers)
+    const columns = [
+        { header: 'TestCaseID', key: 'TestCaseID', width: 10 },
+        { header: 'HladanyText', key: 'HladanyText', width: 30 },
+        { header: 'Názov', key: 'Názov', width: 50 },
+        { header: 'Cena', key: 'Cena', width: 15 },
+        { header: 'Lokalita', key: 'Lokalita', width: 30 },
+        { header: 'Link', key: 'Link', width: 70 }
+    ];
+    worksheet.columns = columns;
+
+    // 2. Pridanie dát
+    worksheet.addRows(data);
+
+    // 3. Uloženie súboru
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '-');
+    const fileName = `Bazos_Scraped_Data_${timestamp}.xlsx`;
+    
+    // **************** OPRAVA LOGIKY ADRESÁRA ****************
+    const outputDir = path.join(__dirname, '..', 'exportovane_data'); 
+    const outputPath = path.join(outputDir, fileName);
+
+    // KĽÚČOVÁ OPRAVA: Voláme zabezpečenie adresára
+    ensureDirectoryExistence(outputPath); 
+    // *******************************************************
+
+    workbook.xlsx.writeFile(outputPath)
+        .then(() => {
+            console.log(`\n✅ Dáta úspešne uložené do Excelu: ${outputPath}`);
+        })
+        .catch(err => {
+            // Táto chyba by sa už nemala zobraziť!
+            console.error('\n🛑 CHYBA pri ukladaní Excelu (Po oprave by už nemala nastať):', err);
+        });
 }
 
 module.exports = { writeExcelData };

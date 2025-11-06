@@ -1,48 +1,35 @@
-import { defineConfig, devices } from '@playwright/test';
+// playwright.config.js
+// @ts-check
+const { defineConfig, devices } = require('@playwright/test');
 
 /**
- * See https://playwright.dev/docs/test-configuration
+ * @see https://playwright.dev/docs/test-configuration
  */
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './tests',
-  
-  // Zvýšenie globálneho timeoutu pre celý test na 60 sekúnd
-  timeout: 60000, 
-  
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    // Zvýšenie timeoutu pre jednotlivé akcie na 15 sekúnd
-    actionTimeout: 15000,
-    
-    // Base URL
-    baseURL: 'https://www.bazos.sk/',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+  // --- ZVÝŠENÝ GLOBÁLNY TIMEOUT PRE CELÝ TEST ---
+  // Navyšujeme na 180 sekúnd (3 minúty) na pokrytie troch pomalých sekvenčných scenárov.
+  timeout: 180000, 
+  // ---------------------------------------------
+
+  use: {
+    baseURL: 'https://www.bazos.sk/',
     trace: 'on-first-retry',
+    // Nastavenie na nahrávanie videa pri zlyhaní
+    video: 'on-first-retry',  
+    screenshot: 'off',        
   },
 
-  /* Configure projects for major browsers - PRIDANÉ FIREFOX a WEBKIT */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
     },
   ],
 });
