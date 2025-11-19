@@ -1,27 +1,28 @@
-# Auto Test Bazos: Data Scraper a Testovanie Filtrov (Playwright / Node.js)
+# Auto Test Bazos: Globálny Scraper a Testovanie Filtrov (Playwright / Node.js)
 
 ## 🌟 Prehľad Projektu
 
-Tento projekt slúži ako automatizovaný nástroj (scraper) na vyhľadávanie a extrakciu dát inzerátov z portálu **Bazos.sk**. Bol vytvorený pomocou Playwright pre vysokú stabilitu a simuláciu realistického správania používateľa.
+Tento projekt slúži ako komplexný automatizovaný nástroj (scraper) na vyhľadávanie a extrakciu dát inzerátov z portálu **Bazos.sk**. Projekt obsahuje dve hlavné verzie scraperov/testov:
 
-Kľúčovou vlastnosťou je parametrizácia: vstupné dáta pre vyhľadávanie (hľadaný text, rubrika, PSČ, cenový rozsah) sa dynamicky načítavajú z externého súboru Excel, čo umožňuje jednoduché vykonávanie viacerých testovacích scenárov (Test Cases - TC) bez zmeny kódu.
+1.  **Parametrizovaný Scraper (Legacy):** Zameraný na testovanie filtrov a extrakciu dát do Excelu (`tests/scraper.spec.js`).
+2.  **Globálny Scraper:** Zameraný na hromadnú extrakciu dát zo všetkých kategórií pre pravidelné spúšťanie cez GitHub Actions (`tests/all_categories_scraper.spec.js`).
 
 ## ⚙️ Kľúčové Funkcie
 
-* **Parametrizované vyhľadávanie:** Načítava vstupné filtre (Hľadaný text, Rubrika, Cena Od/Do, PSČ, Okolie) priamo z Excel súboru (`bazos_filtre.xlsx`).
-* **Kompletná navigácia:** Automatizuje celý proces vyhľadávania od otvorenia stránky, akceptovania cookies, vyplnenia všetkých filtrov až po spustenie hľadania.
-* **Extrakcia dát:** Získava kľúčové informácie o inzerátoch (Názov, Cena, Lokalita, Link) z výsledkov vyhľadávania.
-* **Výstup do Excelu:** Všetky zozbierané dáta z každého úspešne prebehnutého scenára sú exportované do prehľadného Excel súboru (`.xlsx`) s automatickým timestampom.
-* **Robustnosť:** Zahŕňa mechanizmy pre čakanie na dynamické prvky, zvýšené timeouty a obchádzanie potenciálnych chýb pri extrakcii.
+* **Globálna Extrakcia:** Prechádza dynamicky cez 20 hlavných kategórií Bazos.sk a extrahuje dáta do logov Actions.
+* **Testovanie Filtrov (Legacy):** Načítava vstupné filtre (Hľadaný text, Rubrika, Cena Od/Do, PSČ, Okolie) priamo z Excel súboru (`bazos_filtre.xlsx`).
+* **Robustná Extrakcia dát:** Získava kľúčové informácie o inzerátoch (Názov, Cena, Lokalita, Počet zobrazení, Link).
+* **Ošetrenie ceny:** Spracováva číselné ceny aj textové hodnoty ako "V texte" alebo "Dohodou".
+* **Automatizácia cez GitHub Actions:** Kód je pripravený pre pravidelné automatické spúšťanie.
 
 ## 💻 Technológie
 
-* **Playwright:** Hlavný nástroj pre automatizáciu prehliadača (Chromium).
+* **Playwright:** Hlavný nástroj pre automatizáciu prehliadača (Chromium, Firefox, WebKit).
 * **Node.js:** Runtime prostredie.
-* **XLSX:** Použité pre čítanie vstupných dát a zapisovanie výstupných dát do Excel súborov.
+* **XLSX:** Použité pre čítanie vstupných dát a zapisovanie výstupných dát do Excel súborov (v prípade `scraper.spec.js`).
 * **JavaScript:** Jazyk, v ktorom je celý scraper napísaný.
 
-## 🛠️ Inštalácia a Nastavenie
+## 🛠️ Inštalácia a Nastavenie (Lokálne Spustenie)
 
 1.  **Klonovanie Repozitára:**
     ```bash
@@ -36,33 +37,11 @@ Kľúčovou vlastnosťou je parametrizácia: vstupné dáta pre vyhľadávanie (
     npx playwright install
     ```
 
-3.  **Príprava Vstupných Dát:**
-    Umiestnite váš súbor **`bazos_filtre.xlsx`** s testovacími scenármi do koreňového adresára projektu. Očakávané stĺpce v Exceli sú (minimálne):
-    * `TestCaseID`
-    * `HladanyText`
-    * `Rubrika`
-    * `CenaOd`
-    * `CenaDo`
-    * `PSC`
-    * `OkolieKm`
+## 🚀 Spustenie Scrapera a Testov
 
-## 🚀 Spustenie Scrapera
+### 1. Spustenie Legacy Scrapera (Excel Export a Testy)
 
-Spustite test, ktorý automaticky prejde všetkými scenármi definovanými v Exceli a uloží výsledky.
+Tento príkaz spustí scraper, ktorý číta vstupné dáta z Excelu a exportuje výsledky do nového súboru `.xlsx` v priečinku `/data/`.
 
 ```bash
 npx playwright test tests/scraper.spec.js --project=chromium --headed
-
-## 📄 Výstupné Dáta
-
-Výsledky (extrahované inzeráty) sú uložené do adresára `data/` v tvare:
-/data/Bazos_Scraped_Data_[DATETIME].xlsx
-
-
-Každý riadok výsledného Excel súboru bude obsahovať:
-* `TestCaseID`
-* `HladanyText`
-* `Názov` (inzerátu)
-* `Cena`
-* `Lokalita`
-* `Link`
