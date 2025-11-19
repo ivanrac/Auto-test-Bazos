@@ -2,15 +2,17 @@ const { test, expect } = require('@playwright/test');
 const { performance } = require('perf_hooks');
 
 // ---- KONFIGURÁCIA ----
-const BASE_URL = 'https://foto.bazos.sk/'; // ZMENA: Priamy odkaz na kategóriu Foto
-const MAX_ADS_TO_SCRAPE = 5; // NOVÝ LIMIT: Extrahovať iba prvých 5 inzerátov
+// ************************************************************
+const BASE_URL = 'https://sport.bazos.sk/'; // ZMENA: URL pre kategóriu Šport
+// ************************************************************
+const MAX_ADS_TO_SCRAPE = 5; // Limit: Extrahovať iba prvých 5 inzerátov
 const NAVIGATE_DELAY_MS = 1000;
 const POST_ACTION_DELAY_MIN = 2000; 
 const POST_ACTION_DELAY_MAX = 5000;
 const delay = (min, max) => new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 // ----------------------------------------------------
 
-test.describe('Bazos Foto Scraper - Extrakcia prvých 5 inzerátov', () => {
+test.describe('Bazos Sport Scraper - Extrakcia prvých 5 inzerátov', () => {
     
     // Nastavenie timeoutu pre jednotlivé akcie
     test.use({ 
@@ -20,8 +22,8 @@ test.describe('Bazos Foto Scraper - Extrakcia prvých 5 inzerátov', () => {
 
     test('Scraping prvých 5 inzerátov s Cenou, Lokalitou, Názvom a Zobrazeniami', async ({ page }) => {
         
-        const testCaseID = 'TC_FOTO_001';
-        console.log(`🚀 Spúšťam scraping kategórie Foto - ${MAX_ADS_TO_SCRAPE} inzerátov.`);
+        const testCaseID = 'TC_SPORT_001';
+        console.log(`🚀 Spúšťam scraping kategórie Šport - ${MAX_ADS_TO_SCRAPE} inzerátov.`);
         const startTime = performance.now();
         
         let allScrapedData = []; 
@@ -81,7 +83,7 @@ test.describe('Bazos Foto Scraper - Extrakcia prvých 5 inzerátov', () => {
                         // Vyčistíme text (Lokalita a PSČ a Dátum)
                         const cleanedLocation = locationText.trim().replace(/\s*\n\s*/g, ' '); 
                         
-                        // NOVINKA: Počet Zobrazení
+                        // Počet Zobrazení
                         const viewCountElement = resultElement.locator('div.inzeratylok span.velikost10').first();
                         let viewCount = 'N/A';
                         if (await viewCountElement.isVisible({ timeout: 100 })) {
@@ -110,12 +112,12 @@ test.describe('Bazos Foto Scraper - Extrakcia prvých 5 inzerátov', () => {
             // KONIEC KROKU 2
 
             // ------------------------------------------------------------------
-            // *** NOVÝ KROK 3: OVERENIE VÝSLEDKOV (FAIL ak 0) ***
+            // *** KROK 3: OVERENIE VÝSLEDKOV (FAIL ak 0) ***
             // ------------------------------------------------------------------
             await test.step('Overenie, či bola nájdená aspoň jedna položka', async () => {
                 // Používame expect, aby test ZLYHAL, ak je pole prázdne
                 expect(allScrapedData.length).toBeGreaterThan(0, 
-                    `Chyba: Test nenašiel žiadne inzeráty (allScrapedData je prázdne). Očakávané aspoň 1 inzerát.`
+                    `Chyba: Test nenašiel žiadne inzeráty (allScrapedData je prázdne). Očakávané aspoň 1 inzerát z kategórie Šport.`
                 );
                 console.log(`    -> ✅ Overenie: Extrahovaných ${allScrapedData.length} inzerátov.`)
             });
@@ -132,8 +134,7 @@ test.describe('Bazos Foto Scraper - Extrakcia prvých 5 inzerátov', () => {
         // Finalizácia: Výpis extrahovaných dát
         console.log(`\n\n=================================================`);
         console.log(`✅ Extrahované dáta (${allScrapedData.length} inzerátov):`);
-        console.table(allScrapedData); // Použijeme console.table pre pekný výpis v konzole
+        console.table(allScrapedData);
         console.log(`=================================================`);
-
     });
 });
